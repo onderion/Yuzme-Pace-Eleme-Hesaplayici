@@ -45,6 +45,16 @@
         .eval-title { font-size: 1.4em; font-weight: bold; margin-bottom: 15px; }
         .eval-details { font-size: 1.1em; line-height: 1.6; }
         .highlight { font-weight: bold; }
+     
+/* Lap Times Table Styles - Updated to match theme */
+        .lap-table-container { display: flex; justify-content: center; }
+        .lap-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        .lap-table th { background-color: #0056b3; color: white; font-size: 1em; padding: 12px; border: 1px solid #ddd; }
+        .lap-table td { padding: 12px; font-size: 1.1em; border: 1px solid #ddd; text-align: center; }
+        .lap-table tr:nth-child(even) { background-color: #f9f9f9; }
+        .lap-table tr:nth-child(odd) { background-color: white; }
+        .lap-table td:first-child { font-weight: bold; color: #555; } /* Mesafe kolonu kalın */
+        .lap-table td:last-child { font-weight: bold; color: #0056b3; } /* Süre kolonu vurgulu */
         
         @media (max-width: 600px) {
             .grid-2 { grid-template-columns: 1fr; }
@@ -147,9 +157,33 @@
                     Kategoriniz İçin Minimum Baraj (<span id="eval_cat">-</span>): <span id="eval_baraj" class="highlight">-</span>
                 </div>
             </div>
+
+
+<h2>İdeal Tur Zamanları</h2>
+            <div class="lap-table-container">
+                <table class="lap-table">
+                    <thead>
+                        <tr>
+                            <th>Mesafe (m)</th>
+                            <th>Tahmini Süre</th>
+                        </tr>
+                    </thead>
+                      <tbody>
+                        <tr><td>50</td><td id="lap_50">-</td></tr>
+                        <tr><td>100</td><td id="lap_100">-</td></tr>
+                        <tr><td>200</td><td id="lap_200">-</td></tr>
+                        <tr><td>300</td><td id="lap_300">-</td></tr>
+                        <tr><td>400</td><td id="lap_400">-</td></tr>
+                        <tr><td>500</td><td id="lap_500">-</td></tr>
+                        <tr><td>600</td><td id="lap_600">-</td></tr>
+                        <tr><td>800</td><td id="lap_800">-</td></tr>
+                        <tr><td>1000</td><td id="lap_1000">-</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-
+  
     <script>
         const barajData = {
             "kadin": {
@@ -261,6 +295,17 @@
                 evalTitle.innerText = "MALESEF, ELEMEYİ GEÇEMEDİNİZ.";
             }
 
+          // Laps calculation based on user's current pace
+            document.getElementById('lap_50').innerText = formatTime(pacePer100 * 0.5);
+            document.getElementById('lap_100').innerText = formatTime(pacePer100 * 1);
+            document.getElementById('lap_200').innerText = formatTime(pacePer100 * 2);
+            document.getElementById('lap_300').innerText = formatTime(pacePer100 * 3);
+            document.getElementById('lap_400').innerText = formatTime(pacePer100 * 4);
+            document.getElementById('lap_500').innerText = formatTime(pacePer100 * 5);
+            document.getElementById('lap_600').innerText = formatTime(pacePer100 * 6);
+            document.getElementById('lap_800').innerText = formatTime(pacePer100 * 8);
+            document.getElementById('lap_1000').innerText = formatTime(pacePer100 * 10);
+          
             document.getElementById('results').style.display = "block";
         }
     </script>
