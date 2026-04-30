@@ -60,10 +60,29 @@
             .grid-2 { grid-template-columns: 1fr; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
         }
+            /* HIGHLIGHT: Yeni Logo Stilleri (YENİ EKLENDİ) */
+        .logo-container {
+            text-align: left;
+            margin-bottom: 20px; /* Başlık ile logo arasında boşluk */
+            display: flex;
+            justify-content: left;
+            align-items: left;
+        }
+
+        .main-logo {
+            max-width: 250px; /* Logo boyutunu kontrol et */
+            height: auto;
+            border-radius: 8px; /* Opsiyonel hafif yuvarlama */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Yumuşak gölge */
+        }
     </style>
 </head>
 <body>
     <div class="container">
+             <!-- HIGHLIGHT: Yeni Logo Bölümü (YENİ EKLENDİ) -->
+        <div class="logo-container">
+            <!-- NOT: Bu resmi GitHub deponuza 'logo.png' olarak eklemelisiniz -->
+            <img src="logo.png" alt="TEAM ALL TOGETHER Logo" class="main-logo">
         <h1>Yüzme Pace & Eleme Hesaplayıcı</h1>
         <p class="subtitle">Mesafe ve sürenizi girerek antrenman zonelarınızı ve baraj durumunuzu öğrenin</p>
         
