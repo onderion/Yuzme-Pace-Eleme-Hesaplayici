@@ -4,9 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yüzme Pace & Eleme Hesaplayıcı</title>
-   <style>
+    
+    <!-- HIGHLIGHT: PDF oluşturma işlemi için html2pdf.js kütüphanesi eklendi -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; color: #333; margin: 0; padding: 20px; }
         .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        
+        /* Logo Styles */
+        .logo-container { text-align: center; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; }
+        .main-logo { max-width: 250px; height: auto; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
         h1 { text-align: center; color: #0056b3; margin-bottom: 5px; }
         p.subtitle { text-align: center; color: #666; margin-bottom: 30px; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
@@ -15,10 +24,16 @@
         input, select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 1em; }
         .time-inputs { display: flex; gap: 10px; }
         .time-inputs input { width: 33%; }
-        button { background-color: #0056b3; color: white; border: none; padding: 15px; font-size: 1.1em; border-radius: 6px; cursor: pointer; width: 100%; transition: background 0.3s; font-weight: bold; }
-        button:hover { background-color: #004494; }
+        
+        button.calc-btn { background-color: #0056b3; color: white; border: none; padding: 15px; font-size: 1.1em; border-radius: 6px; cursor: pointer; width: 100%; transition: background 0.3s; font-weight: bold; }
+        button.calc-btn:hover { background-color: #004494; }
+        
+        /* HIGHLIGHT: PDF İndir Butonu Stili */
+        button.pdf-btn { background-color: #28a745; color: white; border: none; padding: 15px; font-size: 1.1em; border-radius: 6px; cursor: pointer; width: 100%; transition: background 0.3s; font-weight: bold; margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        button.pdf-btn:hover { background-color: #218838; }
+
         .results-section { display: none; margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; }
-        h2 { color: #0056b3; font-size: 1.3em; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        h2 { color: #0056b3; font-size: 1.3em; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 30px; }
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; text-align: center; margin-bottom: 30px; }
         .stat-box { background: #e3f2fd; padding: 15px; border-radius: 8px; border: 1px solid #b6d4fe; }
         .stat-box span { display: block; font-size: 0.85em; color: #555; margin-bottom: 5px; }
@@ -30,63 +45,45 @@
         
         /* Zone Styles */
         .zone-bold { font-weight: bold; }
-        .zone-z3 { 
-            background-color: #ffeeba !important; /* Hafif sarı vurgu arka planı */
-            font-size: 1.1em;
-            color: #856404;
-            border: 2px solid #ffeeba;
-            box-shadow: 0px 0px 5px rgba(255, 193, 7, 0.5);
-        }
-        .zone-z3 td { font-weight: 800; } /* Z3'ün içindeki tüm metinleri ekstra kalın yap */
+        .zone-z3 { background-color: #ffeeba !important; font-size: 1.1em; color: #856404; border: 2px solid #ffeeba; box-shadow: 0px 0px 5px rgba(255, 193, 7, 0.5); }
+        .zone-z3 td { font-weight: 800; }
 
-        .evaluation { text-align: center; padding: 25px; border-radius: 8px; background: #f8f9fa; border: 2px solid #ddd; }
+        .evaluation { text-align: center; padding: 25px; border-radius: 8px; background: #f8f9fa; border: 2px solid #ddd; margin-bottom: 30px; }
         .eval-success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
         .eval-fail { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
         .eval-title { font-size: 1.4em; font-weight: bold; margin-bottom: 15px; }
         .eval-details { font-size: 1.1em; line-height: 1.6; }
         .highlight { font-weight: bold; }
-     
-/* Lap Times Table Styles - Updated to match theme */
+        
+        /* Lap Times Table Styles */
         .lap-table-container { display: flex; justify-content: center; }
         .lap-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
         .lap-table th { background-color: #0056b3; color: white; font-size: 1em; padding: 12px; border: 1px solid #ddd; }
         .lap-table td { padding: 12px; font-size: 1.1em; border: 1px solid #ddd; text-align: center; }
         .lap-table tr:nth-child(even) { background-color: #f9f9f9; }
         .lap-table tr:nth-child(odd) { background-color: white; }
-        .lap-table td:first-child { font-weight: bold; color: #555; } /* Mesafe kolonu kalın */
-        .lap-table td:last-child { font-weight: bold; color: #0056b3; } /* Süre kolonu vurgulu */
-        
+        .lap-table td:first-child { font-weight: bold; color: #555; }
+        .lap-table td:last-child { font-weight: bold; color: #0056b3; }
+
         @media (max-width: 600px) {
             .grid-2 { grid-template-columns: 1fr; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
         }
-            /* HIGHLIGHT: Yeni Logo Stilleri (YENİ EKLENDİ) */
-        .logo-container {
-            text-align: center;
-            margin-right: 20px; /* Başlık ile logo arasında boşluk */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .main-logo {
-            max-width: 100px; /* Logo boyutunu kontrol et */
-            height: auto;
-            border-radius: 8px; /* Opsiyonel hafif yuvarlama */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Yumuşak gölge */
-        }
+/* PDF Sayfa ve Kenar Kesilmelerini Önleyici Kurallar */
+.evaluation, table, .stat-box, h2, .lap-table-container {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+}
     </style>
 </head>
 <body>
-    <div class="container">
-             <!-- HIGHLIGHT: Yeni Logo Bölümü (YENİ EKLENDİ) -->
+    <div class="container" id="pdf-content">
         <div class="logo-container">
-            <!-- NOT: Bu resmi GitHub deponuza 'logo.png' olarak eklemelisiniz -->
-            <img src="TeamAllTogether.jpeg" alt="TEAM ALL TOGETHER Logo" class="main-logo">
-               </div>
+            <img src="logo.png" alt="TEAM ALL TOGETHER Logo" class="main-logo">
+        </div>
+        
         <h1>Yüzme Pace & Eleme Hesaplayıcı</h1>
-          
-        <p class="subtitle">Mesafe ve sürenizi girerek antrenman zonelarınızı ve baraj durumunuzu öğrenin</p>
+        <p class="subtitle">Mesafe ve sürenizi girerek antrenman zonlarınızı ve baraj durumunuzu öğrenin</p>
         
         <div class="grid-2">
             <div class="form-group">
@@ -127,7 +124,7 @@
             </div>
         </div>
         
-        <button onclick="calculate()">Hesapla</button>
+        <button class="calc-btn" onclick="calculate()">Hesapla</button>
 
         <div class="results-section" id="results">
             <h2>Hız ve Tempo (Pace)</h2>
@@ -150,16 +147,16 @@
                 </div>
             </div>
 
-            <h2>Antrenman Zoneları (100m için)</h2>
+            <h2>Antrenman Zonları (100m için)</h2>
             <table>
                 <thead>
                     <tr>
                         <th>Zone</th>
-                        <th>Süre Aralığı (Ranger per 100)</th>
+                        <th>Süre Aralığı (Ranger)</th>
                         <th>%CV</th>
                     </tr>
                 </thead>
-<tbody>
+                <tbody>
                     <tr class="zone-bold"><td>Z1</td><td id="z1_range">-</td><td>75-84%</td></tr>
                     <tr class="zone-bold"><td>Z2</td><td id="z2_range">-</td><td>84-91%</td></tr>
                     <tr><td>X</td><td id="x_range">-</td><td>91-96%</td></tr>
@@ -179,8 +176,7 @@
                 </div>
             </div>
 
-
-<h2>İdeal Tur Zamanları</h2>
+            <h2>İdeal Tur Zamanları</h2>
             <div class="lap-table-container">
                 <table class="lap-table">
                     <thead>
@@ -189,7 +185,7 @@
                             <th>Tahmini Süre</th>
                         </tr>
                     </thead>
-                      <tbody>
+                    <tbody>
                         <tr><td>50</td><td id="lap_50">-</td></tr>
                         <tr><td>100</td><td id="lap_100">-</td></tr>
                         <tr><td>200</td><td id="lap_200">-</td></tr>
@@ -202,50 +198,31 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- HIGHLIGHT: PDF İndirme Butonu -->
+            <button id="downloadPdfBtn" class="pdf-btn" onclick="downloadPDF()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Sonuçları PDF Olarak İndir
+            </button>
         </div>
     </div>
-  
+
     <script>
         const barajData = {
             "kadin": {
-                "14-18": {str: "11:07", sec: 667},
-                "19-24": {str: "13:35", sec: 815},
-                "25-29": {str: "16:11", sec: 971},
-                "30-34": {str: "16:10", sec: 970},
-                "35-39": {str: "16:51", sec: 1011},
-                "40-44": {str: "17:08", sec: 1029},
-                "45-49": {str: "16:35", sec: 995},
-                "50-54": {str: "17:31", sec: 1051},
-                "55-59": {str: "17:45", sec: 1065},
-                "60-64": {str: "18:03", sec: 1083},
-                "65-69": {str: "20:01", sec: 1201},
-                "70+": {str: "17:23", sec: 1043}
+                "14-18": {str: "11:07", sec: 667}, "19-24": {str: "13:35", sec: 815}, "25-29": {str: "16:11", sec: 971}, "30-34": {str: "16:10", sec: 970}, "35-39": {str: "16:51", sec: 1011}, "40-44": {str: "17:09", sec: 1029}, "45-49": {str: "16:35", sec: 995}, "50-54": {str: "17:31", sec: 1051}, "55-59": {str: "17:45", sec: 1065}, "60-64": {str: "18:03", sec: 1083}, "65-69": {str: "20:01", sec: 1201}, "70+": {str: "17:23", sec: 1043}
             },
             "erkek": {
-                "14-18": {str: "10:56", sec: 656},
-                "19-24": {str: "13:56", sec: 836},
-                "25-29": {str: "15:22", sec: 922},
-                "30-34": {str: "15:31", sec: 931},
-                "35-39": {str: "15:40", sec: 940},
-                "40-44": {str: "15:39", sec: 939},
-                "45-49": {str: "15:49", sec: 949},
-                "50-54": {str: "16:05", sec: 965},
-                "55-59": {str: "16:06", sec: 966},
-                "60-64": {str: "16:30", sec: 990},
-                "65-69": {str: "18:06", sec: 1086},
-                "70+": {str: "20:46", sec: 1246}
+                "14-18": {str: "10:56", sec: 656}, "19-24": {str: "13:56", sec: 836}, "25-29": {str: "15:22", sec: 922}, "30-34": {str: "15:31", sec: 931}, "35-39": {str: "15:40", sec: 940}, "40-44": {str: "15:39", sec: 939}, "45-49": {str: "15:49", sec: 949}, "50-54": {str: "16:05", sec: 965}, "55-59": {str: "16:06", sec: 966}, "60-64": {str: "16:30", sec: 990}, "65-69": {str: "18:06", sec: 1086}, "70+": {str: "20:46", sec: 1246}
             }
         };
 
         function formatTime(seconds) {
             if (!isFinite(seconds) || seconds < 0) return "00:00:00";
-            // KÜSÜRAT DÜZELTMESİ: Excel gibi en yakın saniyeye yuvarlıyoruz (önceki sürümde Math.floor ile aşağı yuvarlanıyordu)
             let totalRounded = Math.round(seconds); 
-            
             let h = Math.floor(totalRounded / 3600);
             let m = Math.floor((totalRounded % 3600) / 60);
             let s = totalRounded % 60;
-            
             let timeStr = "";
             if (h > 0) timeStr += h.toString().padStart(2, '0') + ":";
             timeStr += m.toString().padStart(2, '0') + ":";
@@ -258,34 +235,23 @@
             let h = parseInt(document.getElementById('hours').value) || 0;
             let m = parseInt(document.getElementById('minutes').value) || 0;
             let s = parseInt(document.getElementById('seconds').value) || 0;
-            
             let gender = document.getElementById('gender').value;
             let ageGroup = document.getElementById('age_group').value;
 
-            if (!dist || dist <= 0) {
-                alert("Lütfen geçerli bir mesafe girin.");
-                return;
-            }
-
+            if (!dist || dist <= 0) { alert("Lütfen geçerli bir mesafe girin."); return; }
             let totalSeconds = h * 3600 + m * 60 + s;
-            if (totalSeconds <= 0) {
-                alert("Lütfen geçerli bir süre girin.");
-                return;
-            }
+            if (totalSeconds <= 0) { alert("Lütfen geçerli bir süre girin."); return; }
 
-            // Calculations
             let pacePer100 = totalSeconds / (dist / 100); 
             let speedMMin = 100 / (pacePer100 / 60);
             let speedKmH = (dist / 1000) / (totalSeconds / 3600);
             let speedMSec = dist / totalSeconds;
 
-            // Output top stats
             document.getElementById('out_pace').innerText = formatTime(pacePer100);
             document.getElementById('out_m_min').innerText = speedMMin.toFixed(2);
             document.getElementById('out_km_h').innerText = speedKmH.toFixed(2);
             document.getElementById('out_m_sec').innerText = speedMSec.toFixed(2);
 
-            // Output Zones
             document.getElementById('z1_range').innerText = formatTime(pacePer100 / 0.84) + " - " + formatTime(pacePer100 / 0.75);
             document.getElementById('z2_range').innerText = formatTime(pacePer100 / 0.91) + " - " + formatTime(pacePer100 / 0.84);
             document.getElementById('x_range').innerText  = formatTime(pacePer100 / 0.96) + " - " + formatTime(pacePer100 / 0.91);
@@ -294,7 +260,6 @@
             document.getElementById('z4_range').innerText = formatTime(pacePer100 / 1.06) + " - " + formatTime(pacePer100 / 1.02);
             document.getElementById('z5_range').innerText = "< " + formatTime(pacePer100 / 1.06);
 
-            // Evaluation
             let est800mTimeSec = pacePer100 * 8;
             let baraj = barajData[gender][ageGroup];
             
@@ -304,10 +269,7 @@
 
             let evalBox = document.getElementById('evaluation_box');
             let evalTitle = document.getElementById('eval_title');
-
-            // Temizle
             evalBox.classList.remove('eval-success', 'eval-fail');
-
             if (est800mTimeSec <= baraj.sec) {
                 evalBox.classList.add('eval-success');
                 evalTitle.innerText = "TEBRİKLER, ELEMEYİ GEÇTİNİZ!";
@@ -316,7 +278,6 @@
                 evalTitle.innerText = "MALESEF, ELEMEYİ GEÇEMEDİNİZ.";
             }
 
-          // Laps calculation based on user's current pace
             document.getElementById('lap_50').innerText = formatTime(pacePer100 * 0.5);
             document.getElementById('lap_100').innerText = formatTime(pacePer100 * 1);
             document.getElementById('lap_200').innerText = formatTime(pacePer100 * 2);
@@ -326,9 +287,59 @@
             document.getElementById('lap_600').innerText = formatTime(pacePer100 * 6);
             document.getElementById('lap_800').innerText = formatTime(pacePer100 * 8);
             document.getElementById('lap_1000').innerText = formatTime(pacePer100 * 10);
-          
+
             document.getElementById('results').style.display = "block";
         }
+
+function downloadPDF() {
+    const btn = document.getElementById('downloadPdfBtn');
+    const calcBtn = document.querySelector('.calc-btn');
+    const element = document.getElementById('pdf-content');
+
+    // PDF alırken butonları gizle
+    btn.style.display = 'none';
+    calcBtn.style.display = 'none';
+
+    // SOL KESİLME ÇÖZÜMÜ: Orijinal stilleri hafızaya al
+    const originalMargin = element.style.margin;
+    const originalMaxWidth = element.style.maxWidth;
+    const originalBoxShadow = element.style.boxShadow;
+
+    // PDF için kapsayıcıyı tam sola yasla ve gölgeyi kaldır (kaymayı önler)
+    element.style.margin = '0';
+    element.style.maxWidth = '100%';
+    element.style.boxShadow = 'none';
+
+    // Tarihli dosya adı
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('tr-TR').replace(/\./g, '-'); 
+    const fileName = `Yuzme_Pace_Sonuclari_${dateStr}.pdf`;
+
+    // html2pdf ayarları
+    const opt = {
+        margin:       [10, 10, 15, 10], // Üst, Sağ, Alt, Sol kenar boşlukları
+        filename:     fileName,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { 
+            scale: 2, 
+            useCORS: true, 
+            scrollY: 0 
+        },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        // SAYFA KESİLME ÇÖZÜMÜ: Sadece CSS kurallarına göre sayfayı böl
+        pagebreak:    { mode: ['css', 'legacy'] } 
+    };
+
+    // PDF'i oluştur ve bitince sayfayı eski haline getir
+    html2pdf().set(opt).from(element).save().then(() => {
+        // Stilleri ve butonları geri yükle
+        element.style.margin = originalMargin;
+        element.style.maxWidth = originalMaxWidth;
+        element.style.boxShadow = originalBoxShadow;
+        btn.style.display = 'flex';
+        calcBtn.style.display = 'block';
+    });
+}
     </script>
 </body>
 </html>
