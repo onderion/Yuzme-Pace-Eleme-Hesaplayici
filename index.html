@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yüzme Pace & Eleme Hesaplayıcı</title>
+   <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #0056b3; margin-bottom: 5px; }
+        p.subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-weight: bold; margin-bottom: 5px; font-size: 0.9em; color: #555; }
+        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 1em; }
+        .time-inputs { display: flex; gap: 10px; }
+        .time-inputs input { width: 33%; }
+        button { background-color: #0056b3; color: white; border: none; padding: 15px; font-size: 1.1em; border-radius: 6px; cursor: pointer; width: 100%; transition: background 0.3s; font-weight: bold; }
+        button:hover { background-color: #004494; }
+        .results-section { display: none; margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; }
+        h2 { color: #0056b3; font-size: 1.3em; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; text-align: center; margin-bottom: 30px; }
+        .stat-box { background: #e3f2fd; padding: 15px; border-radius: 8px; border: 1px solid #b6d4fe; }
+        .stat-box span { display: block; font-size: 0.85em; color: #555; margin-bottom: 5px; }
+        .stat-box strong { font-size: 1.3em; color: #0056b3; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        th, td { padding: 12px; text-align: center; border: 1px solid #ddd; }
+        th { background-color: #0056b3; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        /* Zone Styles */
+        .zone-bold { font-weight: bold; }
+        .zone-z3 { 
+            background-color: #ffeeba !important; /* Hafif sarı vurgu arka planı */
+            font-size: 1.1em;
+            color: #856404;
+            border: 2px solid #ffeeba;
+            box-shadow: 0px 0px 5px rgba(255, 193, 7, 0.5);
+        }
+        .zone-z3 td { font-weight: 800; } /* Z3'ün içindeki tüm metinleri ekstra kalın yap */
+
+        .evaluation { text-align: center; padding: 25px; border-radius: 8px; background: #f8f9fa; border: 2px solid #ddd; }
+        .eval-success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .eval-fail { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .eval-title { font-size: 1.4em; font-weight: bold; margin-bottom: 15px; }
+        .eval-details { font-size: 1.1em; line-height: 1.6; }
+        .highlight { font-weight: bold; }
+        
+        @media (max-width: 600px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Yüzme Pace & Eleme Hesaplayıcı</h1>
+        <p class="subtitle">Mesafe ve sürenizi girerek antrenman zonelarınızı ve baraj durumunuzu öğrenin</p>
+        
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Yüzme Mesafesi (Metre)</label>
+                <input type="number" id="distance" value="800" min="1">
+            </div>
+            <div class="form-group">
+                <label>Süre (Saat : Dk : Sn)</label>
+                <div class="time-inputs">
+                    <input type="number" id="hours" placeholder="Saat" value="0" min="0">
+                    <input type="number" id="minutes" placeholder="Dk" value="15" min="0" max="59">
+                    <input type="number" id="seconds" placeholder="Sn" value="28" min="0" max="59">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Cinsiyet</label>
+                <select id="gender">
+                    <option value="kadin">Kadın</option>
+                    <option value="erkek">Erkek</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Yaş Grubu</label>
+                <select id="age_group">
+                    <option value="14-18">14-18</option>
+                    <option value="19-24">19-24</option>
+                    <option value="25-29">25-29</option>
+                    <option value="30-34">30-34</option>
+                    <option value="35-39">35-39</option>
+                    <option value="40-44">40-44</option>
+                    <option value="45-49">45-49</option>
+                    <option value="50-54">50-54</option>
+                    <option value="55-59">55-59</option>
+                    <option value="60-64">60-64</option>
+                    <option value="65-69">65-69</option>
+                    <option value="70+">70 ve +</option>
+                </select>
+            </div>
+        </div>
+        
+        <button onclick="calculate()">Hesapla</button>
+
+        <div class="results-section" id="results">
+            <h2>Hız ve Tempo (Pace)</h2>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span>PACE (m/100m)</span>
+                    <strong id="out_pace">-</strong>
+                </div>
+                <div class="stat-box">
+                    <span>HIZ (m/dk)</span>
+                    <strong id="out_m_min">-</strong>
+                </div>
+                <div class="stat-box">
+                    <span>HIZ (km/s)</span>
+                    <strong id="out_km_h">-</strong>
+                </div>
+                <div class="stat-box">
+                    <span>HIZ (m/sn)</span>
+                    <strong id="out_m_sec">-</strong>
+                </div>
+            </div>
+
+            <h2>Antrenman Zoneları (100m için)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Zone</th>
+                        <th>Süre Aralığı (Ranger per 100)</th>
+                        <th>%CV</th>
+                    </tr>
+                </thead>
+<tbody>
+                    <tr class="zone-bold"><td>Z1</td><td id="z1_range">-</td><td>75-84%</td></tr>
+                    <tr class="zone-bold"><td>Z2</td><td id="z2_range">-</td><td>84-91%</td></tr>
+                    <tr><td>X</td><td id="x_range">-</td><td>91-96%</td></tr>
+                    <tr class="zone-z3"><td>Z3</td><td id="z3_range">-</td><td>96-100%</td></tr>
+                    <tr><td>Y</td><td id="y_range">-</td><td>100-102%</td></tr>
+                    <tr class="zone-bold"><td>Z4</td><td id="z4_range">-</td><td>102-106%</td></tr>
+                    <tr class="zone-bold"><td>Z5</td><td id="z5_range">-</td><td>>106%</td></tr>
+                </tbody>
+            </table>
+
+            <h2>İstanbul Eleme Barajı Değerlendirmesi</h2>
+            <div id="evaluation_box" class="evaluation">
+                <div id="eval_title" class="eval-title">Değerlendiriliyor...</div>
+                <div class="eval-details">
+                    Tahmini 800m Süreniz: <span id="eval_est_time" class="highlight">-</span><br>
+                    Kategoriniz İçin Minimum Baraj (<span id="eval_cat">-</span>): <span id="eval_baraj" class="highlight">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const barajData = {
+            "kadin": {
+                "14-18": {str: "11:07", sec: 667},
+                "19-24": {str: "13:35", sec: 815},
+                "25-29": {str: "16:11", sec: 971},
+                "30-34": {str: "16:10", sec: 970},
+                "35-39": {str: "16:51", sec: 1011},
+                "40-44": {str: "17:08", sec: 1029},
+                "45-49": {str: "16:35", sec: 995},
+                "50-54": {str: "17:31", sec: 1051},
+                "55-59": {str: "17:45", sec: 1065},
+                "60-64": {str: "18:03", sec: 1083},
+                "65-69": {str: "20:01", sec: 1201},
+                "70+": {str: "17:23", sec: 1043}
+            },
+            "erkek": {
+                "14-18": {str: "10:56", sec: 656},
+                "19-24": {str: "13:56", sec: 836},
+                "25-29": {str: "15:22", sec: 922},
+                "30-34": {str: "15:31", sec: 931},
+                "35-39": {str: "15:40", sec: 940},
+                "40-44": {str: "15:39", sec: 939},
+                "45-49": {str: "15:49", sec: 949},
+                "50-54": {str: "16:05", sec: 965},
+                "55-59": {str: "16:06", sec: 966},
+                "60-64": {str: "16:30", sec: 990},
+                "65-69": {str: "18:06", sec: 1086},
+                "70+": {str: "20:46", sec: 1246}
+            }
+        };
+
+        function formatTime(seconds) {
+            if (!isFinite(seconds) || seconds < 0) return "00:00:00";
+            // KÜSÜRAT DÜZELTMESİ: Excel gibi en yakın saniyeye yuvarlıyoruz (önceki sürümde Math.floor ile aşağı yuvarlanıyordu)
+            let totalRounded = Math.round(seconds); 
+            
+            let h = Math.floor(totalRounded / 3600);
+            let m = Math.floor((totalRounded % 3600) / 60);
+            let s = totalRounded % 60;
+            
+            let timeStr = "";
+            if (h > 0) timeStr += h.toString().padStart(2, '0') + ":";
+            timeStr += m.toString().padStart(2, '0') + ":";
+            timeStr += s.toString().padStart(2, '0');
+            return timeStr;
+        }
+
+        function calculate() {
+            let dist = parseFloat(document.getElementById('distance').value);
+            let h = parseInt(document.getElementById('hours').value) || 0;
+            let m = parseInt(document.getElementById('minutes').value) || 0;
+            let s = parseInt(document.getElementById('seconds').value) || 0;
+            
+            let gender = document.getElementById('gender').value;
+            let ageGroup = document.getElementById('age_group').value;
+
+            if (!dist || dist <= 0) {
+                alert("Lütfen geçerli bir mesafe girin.");
+                return;
+            }
+
+            let totalSeconds = h * 3600 + m * 60 + s;
+            if (totalSeconds <= 0) {
+                alert("Lütfen geçerli bir süre girin.");
+                return;
+            }
+
+            // Calculations
+            let pacePer100 = totalSeconds / (dist / 100); 
+            let speedMMin = 100 / (pacePer100 / 60);
+            let speedKmH = (dist / 1000) / (totalSeconds / 3600);
+            let speedMSec = dist / totalSeconds;
+
+            // Output top stats
+            document.getElementById('out_pace').innerText = formatTime(pacePer100);
+            document.getElementById('out_m_min').innerText = speedMMin.toFixed(2);
+            document.getElementById('out_km_h').innerText = speedKmH.toFixed(2);
+            document.getElementById('out_m_sec').innerText = speedMSec.toFixed(2);
+
+            // Output Zones
+            document.getElementById('z1_range').innerText = formatTime(pacePer100 / 0.84) + " - " + formatTime(pacePer100 / 0.75);
+            document.getElementById('z2_range').innerText = formatTime(pacePer100 / 0.91) + " - " + formatTime(pacePer100 / 0.84);
+            document.getElementById('x_range').innerText  = formatTime(pacePer100 / 0.96) + " - " + formatTime(pacePer100 / 0.91);
+            document.getElementById('z3_range').innerText = formatTime(pacePer100 / 1.00) + " - " + formatTime(pacePer100 / 0.96);
+            document.getElementById('y_range').innerText  = formatTime(pacePer100 / 1.02) + " - " + formatTime(pacePer100 / 1.00);
+            document.getElementById('z4_range').innerText = formatTime(pacePer100 / 1.06) + " - " + formatTime(pacePer100 / 1.02);
+            document.getElementById('z5_range').innerText = "< " + formatTime(pacePer100 / 1.06);
+
+            // Evaluation
+            let est800mTimeSec = pacePer100 * 8;
+            let baraj = barajData[gender][ageGroup];
+            
+            document.getElementById('eval_est_time').innerText = formatTime(est800mTimeSec);
+            document.getElementById('eval_cat').innerText = (gender === "kadin" ? "Kadın" : "Erkek") + ", " + ageGroup + " Yaş";
+            document.getElementById('eval_baraj').innerText = baraj.str;
+
+            let evalBox = document.getElementById('evaluation_box');
+            let evalTitle = document.getElementById('eval_title');
+
+            // Temizle
+            evalBox.classList.remove('eval-success', 'eval-fail');
+
+            if (est800mTimeSec <= baraj.sec) {
+                evalBox.classList.add('eval-success');
+                evalTitle.innerText = "TEBRİKLER, ELEMEYİ GEÇTİNİZ!";
+            } else {
+                evalBox.classList.add('eval-fail');
+                evalTitle.innerText = "MALESEF, ELEMEYİ GEÇEMEDİNİZ.";
+            }
+
+            document.getElementById('results').style.display = "block";
+        }
+    </script>
+</body>
+</html>
